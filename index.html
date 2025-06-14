@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación de Distribuciones de Probabilidad</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --accent: #e74c3c;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            color: var(--dark);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+            margin: 25px 0 15px;
+        }
+        
+        .section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        .balls-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .ball {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .ball.selected {
+            transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(241, 196, 15, 0.9);
+        }
+        
+        .btn-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .distribution-btn {
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .distribution-btn:hover {
+            background-color: var(--dark);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .distribution-btn:active {
+            transform: translateY(0);
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .results {
+            background-color: #e8f4fc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .explanation {
+            background-color: #f9f9f9;
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .highlight {
+            background-color: #fffde7;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        
+        .formula {
+            font-family: 'Cambria', serif;
+            font-style: italic;
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn-reset {
+            background-color: #e74c3c;
+        }
+        
+        .btn-reset:hover {
+            background-color: #c0392b;
+        }
+        
+        .distribution-section {
+            display: none;
+        }
+        
+        .active-section {
+            display: block;
+        }
+        
+        .param-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .param-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        /* Nuevos estilos para la sección de simulación */
+        .simulation-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 25px 0;
+        }
+        
+        .simulation-result {
+            background-color: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            border: 2px solid #e0e0ff;
+        }
+        
+        .simulation-result h3 {
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+        
+        .drawn-balls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+        }
+        
+        .drawn-ball {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.8rem;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.5s ease;
+        }
+        
+        .sum-result {
+            font-size: 1.4rem;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #e3f2fd;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-box {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 150px;
+            margin: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+        
+        .comparison {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .comparison-box {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .comparison-box h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+        
+        .progress-container {
+            margin: 10px 0;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .theoretical-value {
+            font-weight: bold;
+            color: #e74c3c;
+            margin-top: 5px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Simulación de Distribuciones de Probabilidad</h1>
+            <p>Explora diferentes distribuciones de probabilidad y simula experimentos aleatorios</p>
+        </header>
+        
+        <div class="section">
+            <h2>Simulación de Urna con Pelotas</h2>
+            <p>Una urna contiene 4 pelotas numeradas del 1 al 4. Se extraen 2 pelotas al azar y Z es la suma de los números obtenidos.</p>
+            
+            <div class="balls-container">
+                <div class="ball" style="background-color: #e74c3c;">1</div>
+                <div class="ball" style="background-color: #3498db;">2</div>
+                <div class="ball" style="background-color: #2ecc71;">3</div>
+                <div class="ball" style="background-color: #f39c12;">4</div>
+            </div>
+            
+            <!-- Controles de simulación -->
+            <div class="simulation-controls">
+                <button class="btn" id="draw-btn">Extraer 2 Pelotas</button>
+                <button class="btn" id="draw-10-btn">Extraer 10 veces</button>
+                <button class="btn" id="draw-100-btn">Extraer 100 veces</button>
+                <button class="btn btn-reset" id="reset-urn-btn">Reiniciar Simulación</button>
+            </div>
+            
+            <!-- Resultado de la simulación -->
+            <div class="simulation-result" id="simulation-result" style="display: none;">
+                <h3>Resultado de la Extracción</h3>
+                <div class="drawn-balls" id="drawn-balls"></div>
+                <p class="sum-result">Suma: <span id="sum-value"></span></p>
+                
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <div>Extracciones realizadas:</div>
+                        <div class="stat-value" id="draw-count">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div>Suma promedio:</div>
+                        <div class="stat-value" id="average-sum">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid">
+                <div>
+                    <h3>Distribución de Probabilidad de Z</h3>
+                    <table id="probability-table">
+                        <thead>
+                            <tr>
+                                <th>Suma (Z)</th>
+                                <th>Frecuencia</th>
+                                <th>Probabilidad Empírica</th>
+                                <th>Probabilidad Teórica</th>
+                            </tr>
+                        </thead>
+                        <tbody id="probability-table-body">
+                            <!-- Las filas se generarán dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div>
+                    <h3>Gráfica de la Distribución de Z</h3>
+                    <div class="chart-container">
+                        <canvas id="urn-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="comparison">
+                <div class="comparison-box">
+                    <h3>Comparación de Probabilidades</h3>
+                    <!-- Las barras de progreso se generarán dinámicamente -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Generación de Números Aleatorios</h2>
+            <p>Seleccione una distribución para generar números aleatorios y visualizar sus propiedades.</p>
+            
+            <div class="btn-container">
+                <button class="distribution-btn" data-dist="bernoulli">Bernoulli</button>
+                <button class="distribution-btn" data-dist="binomial">Binomial</button>
+                <button class="distribution-btn" data-dist="negative-binomial">Binomial Negativa</button>
+                <button class="distribution-btn" data-dist="gamma">Gamma</button>
+                <button class="distribution-btn" data-dist="poisson">Poisson</button>
+                <button class="distribution-btn" data-dist="geometric">Geométrica</button>
+                <button class="distribution-btn" data-dist="hypergeometric">Hipergeométrica</button>
+                <button class="distribution-btn" data-dist="uniform">Uniforme</button>
+                <button class="distribution-btn" data-dist="gaussian">Gaussiana</button>
+                <button class="distribution-btn" data-dist="exponential">Exponencial</button>
+            </div>
+            
+            <div id="distribution-section" class="distribution-section">
+                <div class="explanation" id="dist-explanation">
+                    <!-- Explanation will be loaded here -->
+                </div>
+                
+                <div class="param-row">
+                    <div class="param-group" id="param1-group">
+                        <label id="param1-label">Parámetro 1</label>
+                        <input type="number" id="param1" min="0.01" step="0.01" value="0.5">
+                    </div>
+                    
+                    <div class="param-group" id="param2-group">
+                        <label id="param2-label">Parámetro 2</label>
+                        <input type="number" id="param2" min="1" step="1" value="10">
+                    </div>
+                    
+                    <div class="param-group" id="param3-group">
+                        <label id="param3-label">Parámetro 3</label>
+                        <input type="number" id="param3" min="1" step="1" value="5">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="sample-size">Tamaño de la Muestra:</label>
+                    <input type="number" id="sample-size" min="100" max="10000" step="100" value="1000">
+                </div>
+                
+                <div class="controls">
+                    <button class="btn" id="generate-btn">Generar Muestra</button>
+                    <button class="btn btn-reset" id="reset-btn">Reiniciar</button>
+                </div>
+                
+                <div class="results">
+                    <h3>Resultados</h3>
+                    <p id="sample-mean">Media muestral: </p>
+                    <p id="sample-variance">Varianza muestral: </p>
+                    <p id="theoretical-mean">Media teórica (Esperanza): </p>
+                    <p id="theoretical-variance">Varianza teórica: </p>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="distribution-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Simulación de Distribuciones de Probabilidad &copy; 2023</p>
+        </footer>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentDistribution = null;
+        let distributionChart = null;
+        
+        // Variables para la simulación de la urna
+        let drawCount = 0;
+        let totalSum = 0;
+        let sumCounts = {3: 0, 4: 0, 5: 0, 6: 0, 7: 0};
+        const theoreticalProbabilities = {
+            3: 1/6,
+            4: 1/6,
+            5: 2/6,
+            6: 1/6,
+            7: 1/6
+        };
+        
+        // Inicializar gráfica de la urna
+        const urnCtx = document.getElementById('urn-chart').getContext('2d');
+        const urnChart = new Chart(urnCtx, {
+            type: 'bar',
+            data: {
+                labels: ['3', '4', '5', '6', '7'],
+                datasets: [
+                    {
+                        label: 'Probabilidad Empírica',
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: 'rgba(41, 128, 185, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Probabilidad Teórica',
+                        data: [1/6, 1/6, 2/6, 1/6, 1/6],
+                        backgroundColor: 'rgba(231, 76, 60, 0.5)',
+                        borderColor: 'rgba(231, 76, 60, 1)',
+                        borderWidth: 1,
+                        type: 'line',
+                        pointStyle: 'rectRounded',
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 0.5,
+                        title: {
+                            display: true,
+                            text: 'Probabilidad'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Suma (Z)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const datasetLabel = context.dataset.label || '';
+                                const value = context.parsed.y;
+                                return `${datasetLabel}: ${value.toFixed(4)}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Función para actualizar la tabla y gráfica con los resultados
+        function updateDistributionTableAndChart() {
+            const tableBody = document.getElementById('probability-table-body');
+            tableBody.innerHTML = '';
+            
+            const comparisonBox = document.querySelector('.comparison-box');
+            comparisonBox.innerHTML = '<h3>Comparación de Probabilidades</h3>';
+            
+            const sums = [3, 4, 5, 6, 7];
+            sums.forEach(sum => {
+                const freq = sumCounts[sum];
+                const empiricalProb = drawCount > 0 ? freq / drawCount : 0;
+                const theoreticalProb = theoreticalProbabilities[sum];
+                
+                // Actualizar tabla
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${sum}</td>
+                    <td>${freq}</td>
+                    <td>${empiricalProb.toFixed(4)}</td>
+                    <td>${theoreticalProb.toFixed(4)}</td>
+                `;
+                tableBody.appendChild(row);
+                
+                // Crear barra de progreso para comparación
+                const progressContainer = document.createElement('div');
+                progressContainer.className = 'progress-container';
+                
+                const label = document.createElement('div');
+                label.textContent = `Suma ${sum}:`;
+                progressContainer.appendChild(label);
+                
+                const progressBar = document.createElement('div');
+                progressBar.className = 'progress-bar';
+                
+                const progressFill = document.createElement('div');
+                progressFill.className = 'progress-fill';
+                progressFill.style.width = `${empiricalProb * 100}%`;
+                
+                const progressLabel = document.createElement('div');
+                progressLabel.className = 'progress-label';
+                progressLabel.textContent = `${(empiricalProb * 100).toFixed(1)}%`;
+                
+                const theoreticalValue = document.createElement('div');
+                theoreticalValue.className = 'theoretical-value';
+                theoreticalValue.textContent = `Teórico: ${(theoreticalProb * 100).toFixed(1)}%`;
+                
+                progressBar.appendChild(progressFill);
+                progressBar.appendChild(progressLabel);
+                progressContainer.appendChild(progressBar);
+                progressContainer.appendChild(theoreticalValue);
+                
+                comparisonBox.appendChild(progressContainer);
+            });
+            
+            // Actualizar gráfica con datos empíricos
+            urnChart.data.datasets[0].data = sums.map(sum => drawCount > 0 ? sumCounts[sum] / drawCount : 0);
+            urnChart.update();
+        }
+        
+        // Función para extraer dos pelotas al azar
+        function drawBalls() {
+            // Array con las pelotas
+            const balls = [1, 2, 3, 4];
+            
+            // Seleccionar dos índices diferentes al azar
+            const index1 = Math.floor(Math.random() * balls.length);
+            let index2;
+            do {
+                index2 = Math.floor(Math.random() * balls.length);
+            } while (index2 === index1);
+            
+            // Obtener las pelotas seleccionadas
+            const ball1 = balls[index1];
+            const ball2 = balls[index2];
+            const sum = ball1 + ball2;
+            
+            // Actualizar contadores
+            drawCount++;
+            totalSum += sum;
+            sumCounts[sum]++;
+            
+            const averageSum = drawCount > 0 ? (totalSum / drawCount).toFixed(2) : 0;
+            
+            // Mostrar resultados
+            document.getElementById('draw-count').textContent = drawCount;
+            document.getElementById('average-sum').textContent = averageSum;
+            document.getElementById('sum-value').textContent = sum;
+            
+            // Crear elementos HTML para mostrar las pelotas seleccionadas
+            const drawnBallsDiv = document.getElementById('drawn-balls');
+            drawnBallsDiv.innerHTML = '';
+            
+            const ballColors = {
+                1: '#e74c3c',
+                2: '#3498db',
+                3: '#2ecc71',
+                4: '#f39c12'
+            };
+            
+            const ball1Div = document.createElement('div');
+            ball1Div.className = 'drawn-ball';
+            ball1Div.style.backgroundColor = ballColors[ball1];
+            ball1Div.textContent = ball1;
+            drawnBallsDiv.appendChild(ball1Div);
+            
+            const plusDiv = document.createElement('div');
+            plusDiv.style.display = 'flex';
+            plusDiv.style.alignItems = 'center';
+            plusDiv.style.fontSize = '2rem';
+            plusDiv.style.color = '#7f8c8d';
+            plusDiv.textContent = '+';
+            drawnBallsDiv.appendChild(plusDiv);
+            
+            const ball2Div = document.createElement('div');
+            ball2Div.className = 'drawn-ball';
+            ball2Div.style.backgroundColor = ballColors[ball2];
+            ball2Div.textContent = ball2;
+            drawnBallsDiv.appendChild(ball2Div);
+            
+            // Mostrar el contenedor de resultados
+            document.getElementById('simulation-result').style.display = 'block';
+            
+            // Animación de selección
+            const allBalls = document.querySelectorAll('.balls-container .ball');
+            allBalls.forEach(ball => ball.classList.remove('selected'));
+            
+            setTimeout(() => {
+                allBalls[ball1 - 1].classList.add('selected');
+            }, 100);
+            
+            setTimeout(() => {
+                allBalls[ball2 - 1].classList.add('selected');
+            }, 500);
+            
+            // Actualizar tabla y gráfica
+            updateDistributionTableAndChart();
+            
+            // Restaurar el estado normal después de 1.5 segundos
+            setTimeout(() => {
+                allBalls.forEach(ball => ball.classList.remove('selected'));
+            }, 1500);
+        }
+        
+        // Función para realizar múltiples extracciones
+        function drawMultipleBalls(count) {
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    drawBalls();
+                }, i * 50); // Espaciar las extracciones para animación
+            }
+        }
+        
+        // Función para reiniciar la simulación de la urna
+        function resetUrnSimulation() {
+            drawCount = 0;
+            totalSum = 0;
+            sumCounts = {3: 0, 4: 0, 5: 0, 6: 0, 7: 0};
+            
+            document.getElementById('draw-count').textContent = '0';
+            document.getElementById('average-sum').textContent = '0';
+            document.getElementById('simulation-result').style.display = 'none';
+            
+            // Quitar cualquier selección
+            const allBalls = document.querySelectorAll('.balls-container .ball');
+            allBalls.forEach(ball => ball.classList.remove('selected'));
+            
+            // Actualizar tabla y gráfica
+            updateDistributionTableAndChart();
+        }
+        
+        // Event listeners para los botones de la urna
+        document.getElementById('draw-btn').addEventListener('click', drawBalls);
+        document.getElementById('draw-10-btn').addEventListener('click', () => drawMultipleBalls(10));
+        document.getElementById('draw-100-btn').addEventListener('click', () => drawMultipleBalls(100));
+        document.getElementById('reset-urn-btn').addEventListener('click', resetUrnSimulation);
+        
+        // Inicializar tabla y gráfica
+        updateDistributionTableAndChart();
+        
+        // Mostrar sección de distribución
+        document.querySelectorAll('.distribution-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const dist = this.getAttribute('data-dist');
+                currentDistribution = dist;
+                document.getElementById('distribution-section').classList.add('active-section');
+                
+                // Configurar parámetros según la distribución
+                setupDistribution(dist);
+                
+                // Generar explicación
+                generateExplanation(dist);
+            });
+        });
+        
+        // Configurar parámetros para cada distribución
+        function setupDistribution(dist) {
+            const param1Group = document.getElementById('param1-group');
+            const param2Group = document.getElementById('param2-group');
+            const param3Group = document.getElementById('param3-group');
+            
+            // Ocultar todos los parámetros inicialmente
+            param1Group.style.display = 'none';
+            param2Group.style.display = 'none';
+            param3Group.style.display = 'none';
+            
+            switch(dist) {
+                case 'bernoulli':
+                    param1Group.style.display = 'block';
+                    document.getElementById('param1-label').textContent = 'Probabilidad de éxito (p)';
+                    document.getElementById('param1').value = '0.5';
+                    document.getElementById('param1').min = '0.01';
+                    document.getElementById('param1').max = '0.99';
+                    document.getElementById('param1').step = '0.01';
+                    break;
+                    
+                case 'binomial':
+                    param1Group.style.display = 'block';
+                    param2Group.style.display = 'block';
+                    document.getElementById('param1-label').textContent = 'Probabilidad de éxito (p)';
+                    document.getElementById('param2-label').textContent = 'Número de ensayos (n)';
+                    document.getElementById('param1').value = '0.5';
+                    document.getElementById('param2').value = '10';
+                    break;
+                    
+                case 'negative-binomial':
+                    param1Group.style.display = 'block';
+                    param2Group.style.display = 'block';
+                    document.getElementById('param1-label').textContent = 'Probabilidad de éxito (p)';
+                    document.getElementById('param2-label').textContent = 'Número de éxitos (r)';
+                    document.getElementById('param1').value = '0.5';
+                    document.getElementById('param2').value = '5';
+                    break;
+                    
+                case 'gamma':
+                    param1Group.style.display = 'block';
+                    param2Group.style.display = 'block';
+                    document.getElementById('param1-label').textContent = 'Forma (k)';
+                    document.getElementById('param2-label').textContent = 'Escala (θ)';
+                    document.getElementById('param1').value = '2';
+                    document.getElementById('param2').value = '2';
+                    break;
+                    
+                case 'poisson':
+                    param1Group.style.display = 'block';
+                    document.getElementById('param1-label').textContent = 'Tasa (λ)';
+                    document.getElementById('param1').value = '3';
+                    break;
+                    
+                case 'geometric':
+                    param1Group.style.display = 'block';
+                    document.getElementById('param1-label').textContent = 'Probabilidad de éxito (p)';
+                    document.getElementById('param1').value = '0.3';
+                    break;
+                    
+                case 'hypergeometric':
+                    param1Group.style.display = 'block';
+                    param2Group.style.display = 'block';
+                    param3Group.style.display = 'block';
+                    document.getElementById('param1-label').textContent = 'Población (N)';
+                    document.getElementById('param2-label').textContent = 'Éxitos en población (K)';
+                    document.getElementById('param3-label').textContent = 'Muestra (n)';
+                    document.getElementById('param1').value = '50';
+                    document.getElementById('param2').value = '20';
+                    document.getElementById('param3').value = '10';
+                    break;
+                    
+                case 'uniform':
+                    param1Group.style.display = 'block';
+                    param2Group.style.display = 'block';
+                    document.getElementById('param1-label').textContent = 'Límite inferior (a)';
+                    document.getElementById('param2-label').textContent = 'Límite superior (b)';
+                    document.getElementById('param1').value = '0';
+                    document.getElementById('param2').value = '10';
+                    break;
+                    
+                case 'gaussian':
+                    param1Group.style.display = 'block';
+                    param2Group.style.display = 'block';
+                    document.getElementById('param1-label').textContent = 'Media (μ)';
+                    document.getElementById('param2-label').textContent = 'Desviación estándar (σ)';
+                    document.getElementById('param1').value = '0';
+                    document.getElementById('param2').value = '1';
+                    break;
+                    
+                case 'exponential':
+                    param1Group.style.display = 'block';
+                    document.getElementById('param1-label').textContent = 'Tasa (λ)';
+                    document.getElementById('param1').value = '0.5';
+                    break;
+            }
+        }
+        
+        // Generar explicación de la distribución
+        function generateExplanation(dist) {
+            const explanationDiv = document.getElementById('dist-explanation');
+            let explanation = '';
+            
+            switch(dist) {
+                case 'bernoulli':
+                    explanation = `
+                        <h3>Distribución de Bernoulli</h3>
+                        <p>Modela un experimento con dos posibles resultados: éxito (1) con probabilidad p, o fracaso (0) con probabilidad 1-p.</p>
+                        <div class="formula">P(X=1) = p, P(X=0) = 1-p</div>
+                        <p><span class="highlight">Media (Esperanza)</span>: E[X] = p</p>
+                        <p><span class="highlight">Varianza</span>: Var(X) = p(1-p)</p>
+                        <p><span class="highlight">Ejemplo</span>: Lanzamiento de una moneda (cara = 1, cruz = 0).</p>
+                    `;
+                    break;
+                    
+                case 'binomial':
+                    explanation = `
+                        <h3>Distribución Binomial</h3>
+                        <p>Modela el número de éxitos en una secuencia de n ensayos de Bernoulli independientes, cada uno con probabilidad de éxito p.</p>
+                        <div class="formula">P(X=k) = C(n,k) * p<sup>k</sup> * (1-p)<sup>n-k</sup></div>
+                        <p><span class="highlight">Media (Esperanza)</span>: E[X] = n * p</p>
+                        <p><span class="highlight">Varianza</span>: Var(X) = n * p * (1-p)</p>
+                        <p><span class="highlight">Ejemplo</span>: Número de caras en 10 lanzamientos de moneda.</p>
+                    `;
+                    break;
+                    
+                case 'negative-binomial':
+                    explanation = `
+                        <h3>Distribución Binomial Negativa</h3>
+                        <p>Modela el número de fracasos antes de obtener r éxitos en una secuencia de ensayos de Bernoulli independientes con probabilidad de éxito p.</p>
+                        <div class="formula">P(X=k) = C(k+r-1, r-1) * p<sup>r</sup> * (1-p)<sup>k</sup></div>
+                        <p><span class="highlight">Media (Esperanza)</span>: E[X] = r * (1-p) / p</p>
+                        <p><span class="highlight">Varianza</span>: Var(X) = r * (1-p) / p<sup>2</sup></p>
+                        <p><span class="highlight">Ejemplo</span>: Número de lanzamientos fallidos antes de obtener 3 caras.</p>
+                    `;
+                    break;
+                    
+                case 'gamma':
+                    explanation = `
+                        <h3>Distribución Gamma</h3>
+                        <p>Modela la suma de k variables aleatorias exponenciales independientes con parámetro θ. Se usa para modelar tiempos de espera.</p>
+                        <div class="formula">f(x) = (1 / (Γ(k) * θ<sup>k</sup>)) * x<sup>k-1</sup> * e<sup>-x/θ</sup></div>
+                        <p><span class="highlight">Media (Esperanza)</span>: E[X] = k * θ</p>
+                        <p><span class="highlight">Varianza</span>: Var(X) = k * θ<sup>2</sup></p>
+                        <p><span class="highlight">Ejemplo</span>: Tiempo total para atender a k clientes cuando el tiempo por cliente es exponencial.</p>
+                    `;
+                    break;
+                    
+                case 'poisson':
+                    explanation = `
+                        <h3>Distribución de Poisson</h3>
+                        <p>Modela el número de eventos que ocurren en un intervalo fijo de tiempo o espacio cuando los eventos ocurren con una tasa constante conocida λ e independientemente del tiempo transcurrido desde el último evento.</p>
+                        <div class="formula">P(X=k) = (λ<sup>k</sup> * e<sup>-λ</sup>) / k!</div>
+                        <p><span class="highlight">Media (Esperanza)</span>: E[X] = λ</p>
+                        <p><span class="highlight">Varianza</span>: Var(X) = λ</p>
+                        <p><span class="highlight">Ejemplo</span>: Número de llamadas telefónicas recibidas en una central por hora.</p>
+                    `;
+                    break;
+                    
+                case 'geometric':
+                    explanation = `
+                        <h3>Distribución Geométrica</h3>
+                        <p>Modela el número de ensayos de Bernoulli necesarios para obtener el primer éxito.</p>
+                        <div class="formula">P(X=k) = (1-p)<sup>k-1</sup> * p</div>
+                        <p><span class="highlight">Media (Esperanza)</span>: E[X] = 1 / p</p>
+                        <p><span class="highlight">Varianza</span>: Var(X) = (1-p) / p<sup>2</sup></p>
+                        <p><span class="highlight">Ejemplo</span>: Número de lanzamientos de un dado hasta que sale un 6.</p>
+                    `;
+                    break;
+                    
+                case 'hypergeometric':
+                    explanation = `
+                        <h3>Distribución Hipergeométrica</h3>
+                        <p>Modela el número de éxitos al tomar n muestras sin reemplazo de una población finita de tamaño N que contiene K éxitos.</p>
+                        <div class="formula">P(X=k) = [C(K,k) * C(N-K, n-k)] / C(N,n)</div>
+                        <p><span class="highlight">Media (Esperanza)</span>: E[X] = n * (K/N)</p>
+                        <p><span class="highlight">Varianza</span>: Var(X) = n * (K/N) * (1-K/N) * ((N-n)/(N-1))</p>
+                        <p><span class="highlight">Ejemplo</span>: Número de artículos defectuosos en una muestra de 10 tomados de un lote de 100 con 20 defectuosos.</p>
+                    `;
+                    break;
+                    
+                case 'uniform':
+                    explanation = `
+                        <h3>Distribución Uniforme Continua</h3>
+                        <p>Todos los valores en un intervalo [a,b] tienen la misma probabilidad de ocurrir.</p>
+                        <div class="formula">f(x) = 1 / (b - a) para x ∈ [a, b]</div>
+                        <p><span class="highlight">Media (Esperanza)</span>: E[X] = (a + b) / 2</p>
+                        <p><span class="highlight">Varianza</span>: Var(X) = (b - a)<sup>2</sup> / 12</p>
+                        <p><span class="highlight">Ejemplo</span>: Valor de un número aleatorio entre 0 y 10.</p>
+                    `;
+                    break;
+                    
+                case 'gaussian':
+                    explanation = `
+                        <h3>Distribución Normal (Gaussiana)</h3>
+                        <p>La distribución más importante en estadística. Muchos fenómenos naturales siguen esta distribución.</p>
+                        <div class="formula">f(x) = (1 / (σ√(2π))) * e<sup>-(x-μ)<sup>2</sup>/(2σ<sup>2</sup>)</sup></div>
+                        <p><span class="highlight">Media (Esperanza)</span>: E[X] = μ</p>
+                        <p><span class="highlight">Varianza</span>: Var(X) = σ<sup>2</sup></p>
+                        <p><span class="highlight">Ejemplo</span>: Altura de las personas en una población.</p>
+                    `;
+                    break;
+                    
+                case 'exponential':
+                    explanation = `
+                        <h3>Distribución Exponencial</h3>
+                        <p>Modela el tiempo entre eventos en un proceso de Poisson con tasa λ. Es el equivalente continuo de la distribución geométrica.</p>
+                        <div class="formula">f(x) = λ * e<sup>-λx</sup> para x ≥ 0</div>
+                        <p><span class="highlight">Media (Esperanza)</span>: E[X] = 1 / λ</p>
+                        <p><span class="highlight">Varianza</span>: Var(X) = 1 / λ<sup>2</sup></p>
+                        <p><span class="highlight">Ejemplo</span>: Tiempo entre llegadas de clientes a un banco.</p>
+                    `;
+                    break;
+            }
+            
+            explanationDiv.innerHTML = explanation;
+        }
+        
+        // Generar números aleatorios según la distribución seleccionada
+        document.getElementById('generate-btn').addEventListener('click', function() {
+            if (!currentDistribution) {
+                alert('Por favor seleccione una distribución primero.');
+                return;
+            }
+            
+            const sampleSize = parseInt(document.getElementById('sample-size').value);
+            const samples = [];
+            let param1, param2, param3;
+            
+            // Obtener parámetros
+            param1 = parseFloat(document.getElementById('param1').value);
+            if (document.getElementById('param2-group').style.display === 'block') {
+                param2 = parseFloat(document.getElementById('param2').value);
+            }
+            if (document.getElementById('param3-group').style.display === 'block') {
+                param3 = parseFloat(document.getElementById('param3').value);
+            }
+            
+            // Generar muestras según la distribución
+            switch(currentDistribution) {
+                case 'bernoulli':
+                    for (let i = 0; i < sampleSize; i++) {
+                        samples.push(Math.random() < param1 ? 1 : 0);
+                    }
+                    break;
+                    
+                case 'binomial':
+                    for (let i = 0; i < sampleSize; i++) {
+                        let success = 0;
+                        for (let j = 0; j < param2; j++) {
+                            if (Math.random() < param1) success++;
+                        }
+                        samples.push(success);
+                    }
+                    break;
+                    
+                case 'negative-binomial':
+                    for (let i = 0; i < sampleSize; i++) {
+                        let successes = 0;
+                        let trials = 0;
+                        while (successes < param2) {
+                            trials++;
+                            if (Math.random() < param1) successes++;
+                        }
+                        samples.push(trials - param2); // Número de fracasos
+                    }
+                    break;
+                    
+                case 'gamma':
+                    // Usando el método de suma de exponenciales
+                    for (let i = 0; i < sampleSize; i++) {
+                        let sum = 0;
+                        for (let j = 0; j < param1; j++) {
+                            sum += -Math.log(1 - Math.random()) * param2;
+                        }
+                        samples.push(sum);
+                    }
+                    break;
+                    
+                case 'poisson':
+                    // Algoritmo de Knuth para generar Poisson
+                    for (let i = 0; i < sampleSize; i++) {
+                        let L = Math.exp(-param1);
+                        let k = 0;
+                        let p = 1;
+                        do {
+                            k++;
+                            p *= Math.random();
+                        } while (p > L);
+                        samples.push(k - 1);
+                    }
+                    break;
+                    
+                case 'geometric':
+                    for (let i = 0; i < sampleSize; i++) {
+                        samples.push(Math.floor(Math.log(1 - Math.random()) / Math.log(1 - param1)) + 1);
+                    }
+                    break;
+                    
+                case 'hypergeometric':
+                    for (let i = 0; i < sampleSize; i++) {
+                        // Simulación de muestreo sin reemplazo
+                        const population = [];
+                        // Agregar éxitos
+                        for (let j = 0; j < param2; j++) {
+                            population.push(1);
+                        }
+                        // Agregar fracasos
+                        for (let j = 0; j < param1 - param2; j++) {
+                            population.push(0);
+                        }
+                        
+                        // Barajar población
+                        for (let j = population.length - 1; j > 0; j--) {
+                            const rand = Math.floor(Math.random() * (j + 1));
+                            [population[j], population[rand]] = [population[rand], population[j]];
+                        }
+                        
+                        // Tomar muestra
+                        let successes = 0;
+                        for (let j = 0; j < param3; j++) {
+                            successes += population[j];
+                        }
+                        samples.push(successes);
+                    }
+                    break;
+                    
+                case 'uniform':
+                    for (let i = 0; i < sampleSize; i++) {
+                        samples.push(param1 + Math.random() * (param2 - param1));
+                    }
+                    break;
+                    
+                case 'gaussian':
+                    // Método de Box-Muller
+                    for (let i = 0; i < sampleSize; i++) {
+                        let u1 = Math.random();
+                        let u2 = Math.random();
+                        let z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+                        samples.push(param1 + z0 * param2);
+                    }
+                    break;
+                    
+                case 'exponential':
+                    for (let i = 0; i < sampleSize; i++) {
+                        samples.push(-Math.log(1 - Math.random()) / param1);
+                    }
+                    break;
+            }
+            
+            // Calcular estadísticas
+            const mean = samples.reduce((a, b) => a + b, 0) / sampleSize;
+            const variance = samples.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (sampleSize - 1);
+            
+            // Calcular valores teóricos
+            let theoreticalMean, theoreticalVariance;
+            switch(currentDistribution) {
+                case 'bernoulli':
+                    theoreticalMean = param1;
+                    theoreticalVariance = param1 * (1 - param1);
+                    break;
+                    
+                case 'binomial':
+                    theoreticalMean = param2 * param1;
+                    theoreticalVariance = param2 * param1 * (1 - param1);
+                    break;
+                    
+                case 'negative-binomial':
+                    theoreticalMean = param2 * (1 - param1) / param1;
+                    theoreticalVariance = param2 * (1 - param1) / (param1 * param1);
+                    break;
+                    
+                case 'gamma':
+                    theoreticalMean = param1 * param2;
+                    theoreticalVariance = param1 * param2 * param2;
+                    break;
+                    
+                case 'poisson':
+                    theoreticalMean = param1;
+                    theoreticalVariance = param1;
+                    break;
+                    
+                case 'geometric':
+                    theoreticalMean = 1 / param1;
+                    theoreticalVariance = (1 - param1) / (param1 * param1);
+                    break;
+                    
+                case 'hypergeometric':
+                    theoreticalMean = param3 * (param2 / param1);
+                    theoreticalVariance = param3 * (param2 / param1) * (1 - param2 / param1) * ((param1 - param3) / (param1 - 1));
+                    break;
+                    
+                case 'uniform':
+                    theoreticalMean = (param1 + param2) / 2;
+                    theoreticalVariance = Math.pow(param2 - param1, 2) / 12;
+                    break;
+                    
+                case 'gaussian':
+                    theoreticalMean = param1;
+                    theoreticalVariance = param2 * param2;
+                    break;
+                    
+                case 'exponential':
+                    theoreticalMean = 1 / param1;
+                    theoreticalVariance = 1 / (param1 * param1);
+                    break;
+            }
+            
+            // Mostrar resultados
+            document.getElementById('sample-mean').textContent = `Media muestral: ${mean.toFixed(4)}`;
+            document.getElementById('sample-variance').textContent = `Varianza muestral: ${variance.toFixed(4)}`;
+            document.getElementById('theoretical-mean').textContent = `Media teórica (Esperanza): ${theoreticalMean.toFixed(4)}`;
+            document.getElementById('theoretical-variance').textContent = `Varianza teórica: ${theoreticalVariance.toFixed(4)}`;
+            
+            // Crear histograma
+            createHistogram(samples);
+        });
+        
+        // Crear histograma de los datos
+        function createHistogram(data) {
+            const ctx = document.getElementById('distribution-chart').getContext('2d');
+            
+            // Destruir gráfica anterior si existe
+            if (distributionChart) {
+                distributionChart.destroy();
+            }
+            
+            // Calcular bins para el histograma
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const range = max - min;
+            const binCount = Math.min(20, Math.floor(Math.sqrt(data.length)));
+            const binSize = range / binCount;
+            
+            // Crear bins
+            const bins = Array(binCount).fill(0);
+            for (const value of data) {
+                const binIndex = Math.min(Math.floor((value - min) / binSize), binCount - 1);
+                bins[binIndex]++;
+            }
+            
+            // Crear etiquetas
+            const labels = [];
+            for (let i = 0; i < binCount; i++) {
+                const start = min + i * binSize;
+                const end = min + (i + 1) * binSize;
+                labels.push(`${start.toFixed(2)}-${end.toFixed(2)}`);
+            }
+            
+            // Crear gráfica
+            distributionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Frecuencia',
+                        data: bins,
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: 'rgba(41, 128, 185, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Frecuencia'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Valores'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Distribución de la Muestra'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Reiniciar
+        document.getElementById('reset-btn').addEventListener('click', function() {
+            if (distributionChart) {
+                distributionChart.destroy();
+                distributionChart = null;
+            }
+            
+            document.getElementById('sample-mean').textContent = 'Media muestral: ';
+            document.getElementById('sample-variance').textContent = 'Varianza muestral: ';
+            document.getElementById('theoretical-mean').textContent = 'Media teórica (Esperanza): ';
+            document.getElementById('theoretical-variance').textContent = 'Varianza teórica: ';
+        });
+    </script>
+</body>
+</html>
